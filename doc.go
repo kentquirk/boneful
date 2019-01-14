@@ -30,8 +30,13 @@ the documentation for those endpoints.
 It also makes it fairly easy to port go-restful-based APIs by minor mods
 to the API definitions and somewhat larger mods to the handlers.
 
-Finally, it automatically adds a /md endpoint to the API which will
-deliver the documentation in .md (markdown) form, intended to be compatible
-with GitHub's GFM.
+Finally, it automatically adds a couple of endpoints to the API,
+provided that the API doesn't already define them:
 
+* /md -- delivers the documentation in .md (markdown) form, intended
+	to be compatible with GitHub's GFM.
+* /jsondoc -- returns the documentation information as JSON (could be
+	used in a swagger-like style.
+* /health -- returns 200 and "OK" (if you want your app to be smarter,
+	simply set up your own /health endpoint)
 */

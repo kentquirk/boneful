@@ -8,6 +8,8 @@ import (
 	"strings"
 )
 
+// RouteBuilder is the type that is managed by boneful. It contains
+// all of the information about a route.
 type RouteBuilder struct {
 	rootPath    string
 	currentPath string
@@ -25,12 +27,14 @@ type RouteBuilder struct {
 	errorMap    map[int]ResponseError
 }
 
+// ResponseError is an error type returned from this API
 type ResponseError struct {
 	Code    int         `json:"code"`
 	Message string      `json:"message"`
 	Model   interface{} `json:"model"`
 }
 
+// NewRouteBuilder constructs an empty RouteBuilder.
 func NewRouteBuilder() *RouteBuilder {
 	return &RouteBuilder{
 		parameters: make([]*Parameter, 0),
@@ -62,7 +66,7 @@ func (b *RouteBuilder) Produces(mimeTypes ...string) *RouteBuilder {
 	return b
 }
 
-// Consumes specifies what MIME types can be consumes ; the Accept Http header must matched any of these
+// Consumes specifies what MIME types can be consumed ; the Accept Http header must match one of these
 func (b *RouteBuilder) Consumes(mimeTypes ...string) *RouteBuilder {
 	b.consumes = mimeTypes
 	return b
@@ -83,7 +87,7 @@ func (b *RouteBuilder) Doc(documentation string) *RouteBuilder {
 	return b
 }
 
-// A verbose explanation of the operation behavior. Optional.
+// Notes is a verbose explanation of the operation behavior. Optional.
 func (b *RouteBuilder) Notes(notes string) *RouteBuilder {
 	re := regexp.MustCompile("\n[ \t]+")
 	b.notes = re.ReplaceAllString(notes, "\n")

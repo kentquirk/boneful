@@ -1,6 +1,6 @@
 package boneful
 
-var md_template string = `
+var mdTemplate = `
 ---
 # ` + "`" + `{{.RootPath}}` + "`" + `
 
@@ -36,7 +36,7 @@ _**Consumes:**_ ` + "`" + `{{.Consumes}}` + "`" + `
 {{end}}
 {{if .Reads}}
 _**Reads:**_
-` + "```json" + `
+` + "```{{.CodeFormat}}" + `
         {{.Reads}}
 ` + "```" + `
 {{end}}
@@ -45,7 +45,7 @@ _**Produces:**_ ` + "`" + `{{.Produces}}` + "`" + `
 {{end}}
 {{if .Writes}}
 _**Writes:**_
-` + "```json" + `
+` + "```{{.CodeFormat}}" + `
         {{.Writes}}
 ` + "```" + `
 {{end}}

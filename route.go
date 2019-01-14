@@ -34,10 +34,29 @@ func (r Route) String() string {
 	return r.Method + " " + r.Path
 }
 
-func (r Route) Reads() string {
+// CodeFormat generates the marker for file contents for a code
+// block in Markdown
+func (r Route) CodeFormat() string {
 	for _, c := range r.Consumes {
 		switch c {
 		case "text/plain":
+			return "text"
+		case "text/markdown":
+			return "markdown"
+		case "text/html":
+			return "html"
+		case "application/json":
+			return "json"
+		}
+	}
+	return ""
+}
+
+// Reads returns formatted example content for a Reads value
+func (r Route) Reads() string {
+	for _, c := range r.Consumes {
+		switch c {
+		case "text/plain", "text/markdown", "text/html":
 			return r.ReadSample.(string)
 		case "application/json":
 			b, err := json.MarshalIndent(r.ReadSample, "        ", "  ")
@@ -50,6 +69,7 @@ func (r Route) Reads() string {
 	return ""
 }
 
+// Writes returns formatted example content for a Writes value
 func (r Route) Writes() string {
 	for _, p := range r.Produces {
 		switch p {

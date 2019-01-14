@@ -41,6 +41,7 @@ func (p *Parameter) Data() ParameterData {
 	return *p.D
 }
 
+// ParameterKind returns the type of this parameter as a string.
 func (p ParameterData) ParameterKind() string {
 	switch p.Kind {
 	case PathParameterKind:

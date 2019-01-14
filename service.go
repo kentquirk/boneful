@@ -12,24 +12,27 @@ import (
 	"github.com/go-zoo/bone"
 )
 
+// Service is the base type for what users of the API will manage
 type Service struct {
 	rootPath      string
 	routes        []Route
 	documentation string
 }
 
+// GenerateDocumentation is used to spit out markdown format of docs.
 func (s *Service) GenerateDocumentation(w io.Writer) {
 	funcMap := template.FuncMap{
 		// The name "lower" is what the function will be called in the template text.
 		"lower": strings.ToLower,
 	}
-	tmpl := template.Must(template.New("md").Funcs(funcMap).Parse(md_template))
+	tmpl := template.Must(template.New("md").Funcs(funcMap).Parse(mdTemplate))
 	tmpl.Execute(w, s)
 }
 
+// GenerateJSONDoc emits JSON-formatted documentation info
 func (s *Service) GenerateJSONDoc(w io.Writer) {
 	fmt.Println(len(s.routes))
-	r := s.routes[1]
+	r := s.routes[0]
 	fmt.Printf("%#v\n", r)
 	j, err := json.Marshal(r)
 	if err != nil {
@@ -40,6 +43,8 @@ func (s *Service) GenerateJSONDoc(w io.Writer) {
 	json.NewEncoder(w).Encode(s.routes)
 }
 
+// Mux returns a multiplexer that can be used as a master handler to
+// route requests to the appropriate handler.
 func (s *Service) Mux() *bone.Mux {
 	mux := bone.New()
 	for _, r := range s.routes {
@@ -59,18 +64,55 @@ func (s *Service) Mux() *bone.Mux {
 		}
 	}
 
-	mux.GetFunc(concatPath(s.RootPath(), "/md"), s.GetDocMD)
-	mux.GetFunc(concatPath(s.RootPath(), "/jsondoc"), s.GetJSONDoc)
+	// helper function to make sure we don't overwrite
+	// routes provided by our caller
+	hasRoute := func(rt string) bool {
+		for _, routes := range mux.Routes {
+			for _, r := range routes {
+				if r.Path == rt {
+					return true
+				}
+			}
+		}
+		return false
+	}
+
+	mdpath := concatPath(s.RootPath(), "/md")
+	if !hasRoute(mdpath) {
+		mux.GetFunc(mdpath, s.GetDocMD)
+	}
+	jsondoc := concatPath(s.RootPath(), "/jsondoc")
+	if !hasRoute(jsondoc) {
+		mux.GetFunc(jsondoc, s.GetJSONDoc)
+	}
+	health := concatPath(s.RootPath(), "/health")
+	if !hasRoute(health) {
+		mux.GetFunc(health, s.HealthCheck)
+	}
+	for verb, routes := range mux.Routes {
+		for _, r := range routes {
+			fmt.Printf("%s %#v\n", verb, *r)
+		}
+	}
 
 	return mux
 }
 
+// GetDocMD is a handler for markdown documentation.
 func (s *Service) GetDocMD(rw http.ResponseWriter, req *http.Request) {
 	s.GenerateDocumentation(rw)
 }
 
+// GetJSONDoc is a handler to return JSON documentation
 func (s *Service) GetJSONDoc(rw http.ResponseWriter, req *http.Request) {
 	s.GenerateJSONDoc(rw)
+}
+
+// HealthCheck is a rudimentary endpoint that simply returns "OK".
+// If you want something more sophisticated, simply write your own
+// and put it under the /health endpoint.
+func (s *Service) HealthCheck(rw http.ResponseWriter, req *http.Request) {
+	json.NewEncoder(rw).Encode("OK")
 }
 
 // Path specifies the root URL template path of the WebService.
@@ -96,7 +138,10 @@ func (s *Service) RootPath() string {
 	return s.rootPath
 }
 
-// Doc is used to set the documentation of this service.
+// Doc is used to set the documentation text of this service.
+// It strips leading whitespace from every line so that you can
+// have attractive indenting in your source files. Markdown will
+// mess with it anyway.
 func (s *Service) Doc(plainText string) *Service {
 	re := regexp.MustCompile("\n[ \t]+")
 	s.documentation = re.ReplaceAllString(plainText, "\n")
