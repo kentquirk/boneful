@@ -2,7 +2,6 @@ package boneful
 
 import (
 	"encoding/json"
-	"fmt"
 	"io"
 	"net/http"
 	"regexp"
@@ -31,15 +30,15 @@ func (s *Service) GenerateDocumentation(w io.Writer) {
 
 // GenerateJSONDoc emits JSON-formatted documentation info
 func (s *Service) GenerateJSONDoc(w io.Writer) {
-	fmt.Println(len(s.routes))
-	r := s.routes[0]
-	fmt.Printf("%#v\n", r)
-	j, err := json.Marshal(r)
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
-	fmt.Println(j)
+	// fmt.Println(len(s.routes))
+	// r := s.routes[0]
+	// fmt.Printf("%#v\n", r)
+	// j, err := json.Marshal(r)
+	// if err != nil {
+	// 	fmt.Println(err)
+	// 	return
+	// }
+	// fmt.Println(j)
 	json.NewEncoder(w).Encode(s.routes)
 }
 
@@ -89,11 +88,11 @@ func (s *Service) Mux() *bone.Mux {
 	if !hasRoute(health) {
 		mux.GetFunc(health, s.HealthCheck)
 	}
-	for verb, routes := range mux.Routes {
-		for _, r := range routes {
-			fmt.Printf("%s %#v\n", verb, *r)
-		}
-	}
+	// for verb, routes := range mux.Routes {
+	// 	for _, r := range routes {
+	// 		fmt.Printf("%s %#v\n", verb, *r)
+	// 	}
+	// }
 
 	return mux
 }
